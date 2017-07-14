@@ -8,15 +8,6 @@ import * as vinylFs from "vinyl-fs";
 const taskIds: string[] = []
 
 /**
- * Imprime as mensagens especificadas, concatenadas com a string ' - ' e com a cor verde.
- * @param messages - Mensagens a serem concatenadas com a string ' - '.
- */
-function successMessage(...messages: any[])
-{
-	console.log(colors.green(messages.join(' - ')))
-}
-
-/**
  * Opções pra `gulp.src()`.
  */
 export type SrcOptions = vinylFs.SrcOptions
@@ -187,4 +178,22 @@ export function build(buildings: Building|Building[], defaultInOutBuilding?: InO
 			})
 		}
 	}
+}
+
+/**
+ * Imprime as mensagens especificadas, concatenadas com a string ' - ' e com a cor verde.
+ * @param messages - Mensagens a serem concatenadas com a string ' - '.
+ */
+export function successMessage(...messages: any[])
+{
+	console.log(colors.green(messages.join(' - ')))
+}
+
+/**
+ * Imprime as mensagens especificadas, concatenadas com a string ' - ' e com a cor vermelha.
+ * @param messages - Mensagens a serem concatenadas com a string ' - '.
+ */
+export function errorMessage(...messages: any[])
+{
+	console.log(colors.red(messages.join(' - ')))
 }
