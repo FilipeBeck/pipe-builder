@@ -118,7 +118,7 @@ for (const key in yargs.argv)
 export function build(buildings: Building|Building[], defaultInOutBuilding?: InOutBuilding)
 { // Formata `buildings` para `Array`
 	buildings = buildings instanceof Array ? buildings : [buildings]
-	// Formata `defaultInOutBuilding` para conter `Dictionary<StreamCalback[]>`
+	// Formata `defaultInOutBuilding` para conter `Dictionary<StreamCalback>`
 	defaultInOutBuilding = defaultInOutBuilding || { input: {}, output: {} }
 	// InOut como dicionário
 	const inOutBuilding = defaultInOutBuilding as Dictionary<any>

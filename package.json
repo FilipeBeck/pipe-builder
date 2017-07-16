@@ -1,6 +1,6 @@
 {
   "name": "pipe-builder",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Construtor de projetos",
   "main": "app/main.js",
   "types": "app/main.d.ts",
@@ -8,7 +8,7 @@
     "app"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha tests/test.js -R spec",
     "prepublish": "gulp"
   },
   "repository": {
@@ -16,7 +16,9 @@
     "url": "git+ssh://git@github.com:FilipeBeck/pipe-builder.git"
   },
   "keywords": [
-    "pipe-builder", "project-constructor", "repeat-reducer"
+    "pipe-builder",
+    "project-constructor",
+    "repeat-reducer"
   ],
   "author": "Filipe Roberto Beck",
   "license": "MIT",
@@ -32,7 +34,11 @@
     "@types/gulp": "^4.0.4",
     "@types/gulp-changed": "0.0.31",
     "@types/yargs": "^8.0.0",
+    "del": "^3.0.0",
+    "gulp-filter": "^5.0.0",
     "gulp-typescript": "^3.2.0",
-    "typescript": "^2.4.1"
+    "mocha": "^3.4.2",
+    "typescript": "^2.4.1",
+    "unit.js": "^2.0.0"
   }
 }
