@@ -2,7 +2,7 @@ import * as colors from 'colors/safe'
 import * as yargs from 'yargs'
 import * as gulp from 'gulp'
 import * as changed from 'gulp-changed'
-import * as vinylFs from "vinyl-fs";
+import * as vinylFs from "vinyl-fs"
 
 /** Lista de todas as tarefas já registradas. */
 const taskIds: string[] = []
@@ -35,7 +35,7 @@ export type DestOptions = {
 }
 
 /**
- * Globs.
+ * Uma caixinha de globs-globs.
  */
 export type Globs = string|string[]
 
@@ -115,7 +115,7 @@ for (const key in yargs.argv)
  * @param defaultOutBuilding
  */
 
-export function build(buildings: Building|Building[], defaultInOutBuilding?: InOutBuilding)
+export function build(buildings: Building|Building[], defaultInOutBuilding?: InOutBuilding): Promise<void[]>
 { // Formata `buildings` para `Array`
 	buildings = buildings instanceof Array ? buildings : [buildings]
 	// Formata `defaultInOutBuilding` para conter `Dictionary<StreamCalback>`
@@ -129,11 +129,14 @@ export function build(buildings: Building|Building[], defaultInOutBuilding?: InO
 		else if (typeof inOutBuilding[key] === 'function')
 			inOutBuilding[key] = { '--': inOutBuilding[key] }
 	}
-
+	// Promessas de todas as execuções
+	const promises: Promise<void>[] = []
+	// Stream de encadeamento
 	let stream: NodeJS.ReadWriteStream
 
 	for (const building of buildings) {
 		// Não executa a construção se não houver alguma das flags fornecidas
+		// TODO: Analizar e, se for útil, implementar essa característica (NÂO É USADA ATUALMENTE)
 		if (building.flags)
 			for (const flag of building.flags)
 				if (!(flag in argv))
@@ -149,35 +152,40 @@ export function build(buildings: Building|Building[], defaultInOutBuilding?: InO
 				throw new Error(`Tarefa com identificador '${name}' já existe.`)
 			}
 
-			// Lê entrada/s
-			stream = gulp.src(srcPath, srcOptions)
-
-			if (building.extension && !argv['--overwite-all'])
-				stream = stream.pipe(changed(destPath, building.extension != '*' ? { extension: building.extension } : undefined))
-
-			const inputBuilding = defaultInOutBuilding.input as Dictionary<StreamCallback>
-
-			for (const key in inputBuilding)
-				if (key == '--' || argv[key])
-					stream = inputBuilding[key](stream, taskId)
+			promises.push(new Promise<void>((resolve, reject) => {
+				// Lê entrada/s
+				stream = gulp.src(srcPath, srcOptions)
 			
-			const task = building.tasks[taskId] as StreamCallback
-			
-			if (task)
-				stream = task(stream, taskId)
-
-			const outputBuilding = defaultInOutBuilding.output as Dictionary<StreamCallback>
-
-			for (const key in outputBuilding)
-				if (key == '--' || argv[key])
-					stream = outputBuilding[key](stream, taskId)
-
-			stream.pipe(gulp.dest(destPath, destOptions)).on('end', () => {
-				const messages = !building.messages ? ['Finished'] : building.messages instanceof Array ? building.messages : [building.messages]
-				successMessage(`Task '${taskId}'`, ...messages)
-			})
+				if (building.extension && !argv['--overwite-all'])
+					stream = stream.pipe(changed(destPath, building.extension != '*' ? { extension: building.extension } : undefined))
+	
+				const inputBuilding = (defaultInOutBuilding as InOutBuilding).input as Dictionary<StreamCallback>
+				// Executa as tarefas de entrada
+				for (const key in inputBuilding)
+					if (key == '--' || argv[key])
+						stream = inputBuilding[key](stream, taskId)
+				
+				const task = building.tasks[taskId] as StreamCallback
+				
+				if (task)
+					stream = task(stream, taskId)
+	
+				const outputBuilding = (defaultInOutBuilding as InOutBuilding).output as Dictionary<StreamCallback>
+				// Executa as tarefas de saída
+				for (const key in outputBuilding)
+					if (key == '--' || argv[key])
+						stream = outputBuilding[key](stream, taskId)
+	
+				stream.pipe(gulp.dest(destPath, destOptions)).on('end', () => {
+					const messages = !building.messages ? ['Finished'] : building.messages instanceof Array ? building.messages : [building.messages]
+					successMessage(`Task '${taskId}'`, ...messages)
+					resolve()
+				})
+			}))
 		}
 	}
+
+	return Promise.all(promises)
 }
 
 /**

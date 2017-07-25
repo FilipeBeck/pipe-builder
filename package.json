@@ -1,6 +1,6 @@
 {
   "name": "pipe-builder",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Construtor de projetos",
   "main": "app/main.js",
   "types": "app/main.d.ts",

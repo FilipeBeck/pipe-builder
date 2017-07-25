@@ -7,7 +7,7 @@ const gulp = require('gulp')
 
 const SRC = 'tests/input-files/**/*'
 const DEST = 'tests/output-files'
-const WAIT_TIME = 500
+const WAIT_TIME = 1000
 
 del('tests/output-files/**/*')
 
@@ -15,6 +15,7 @@ const inputStreams = []
 const outputStreams = []
 
 let executedTasks = []
+let areExecutedPromises = false
 
 describe('Testando pipe-builder', () => {
 	builder.build({
@@ -61,9 +62,11 @@ describe('Testando pipe-builder', () => {
 
 			return s
 		}
+	}).then(() => {
+		areExecutedPromises = true
 	})
 
-	it('todas tarefas executadas', () => {
+	it('todas tarefas executadas', done => {
 		test.wait(WAIT_TIME, () => {
 			test.assert(executedTasks.indexOf('task-1') != -1 && executedTasks.indexOf('task-2') != -1)
 			done()
@@ -85,32 +88,43 @@ describe('Testando pipe-builder', () => {
 			'task-3': null
 		}
 	}, {
-		SHOULD_EXECUTE_FLAG: () => {
-			executedTasks.push(SHOULD_EXECUTE_FLAG)
-		},
-		NOT_EXECUTE_FLAG: () => {
-			executedTasks.push(NOT_EXECUTE_FLAG)
-		},
-		ALL_EXECUTE_FLAG: () => {
-			executedTasks.push(ALL_EXECUTE_FLAG)
+		output: {
+			[SHOULD_EXECUTE_FLAG]: s => {
+				executedTasks.push(SHOULD_EXECUTE_FLAG)
+				return s
+			},
+			[NOT_EXECUTE_FLAG]: s => {
+				executedTasks.push(NOT_EXECUTE_FLAG)
+				return s
+			},
+			[ALL_EXECUTE_FLAG]: s => {
+				executedTasks.push(ALL_EXECUTE_FLAG)
+				return s
+			}
 		}
 	})
 
-	it(`flag '${SHOULD_EXECUTE_FLAG}'`, () => {
+	it(`flag '${SHOULD_EXECUTE_FLAG}'`, done => {
 		test.wait(WAIT_TIME, () => {
 			test.assert(executedTasks.indexOf(SHOULD_EXECUTE_FLAG) != -1)
 			done()
 		})
 	})
-	it(`flag '${NOT_EXECUTE_FLAG}'`, () => {
+	it(`flag '${NOT_EXECUTE_FLAG}'`, done => {
 		test.wait(WAIT_TIME, () => {
 			test.assert(executedTasks.indexOf(NOT_EXECUTE_FLAG) == -1)
 			done()
 		})
 	})
-	it(`flag '${ALL_EXECUTE_FLAG}'`, () => {
+	it(`flag '${ALL_EXECUTE_FLAG}'`, done => {
 		test.wait(WAIT_TIME, () => {
 			test.assert(executedTasks.indexOf(ALL_EXECUTE_FLAG) != -1)
+			done()
+		})
+	})
+	it ('promise execution', done => {
+		test.wait(WAIT_TIME, () => {
+			test.assert(areExecutedPromises)
 			done()
 		})
 	})
